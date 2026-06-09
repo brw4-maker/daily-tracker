@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="ku" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>بڕوا — شوێنکەوتنی ڕۆژانە</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --gold: #d4a843;
+    --gold-l: #f0c860;
+    --teal: #0d9488;
+    --teal-l: #14b8a6;
+    --emerald: #059669;
+    --bg: #080c14;
+    --card: rgba(15,23,42,0.88);
+    --border: rgba(212,168,67,0.15);
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --sub: #94a3b8;
+  }
+
+  body {
+    font-family: 'Noto Naskh Arabic', serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    direction: rtl;
+    overflow-x: hidden;
+  }
+
+  /* ─── Background ─── */
+  #bg {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background:
+      radial-gradient(ellipse 120% 80% at 20% 10%, rgba(13,148,136,.13) 0%, transparent 60%),
+      radial-gradient(ellipse 100% 60% at 80% 80%, rgba(212,168,67,.09) 0%, transparent 50%),
+      #080c14;
+  }
+
+  .grid-lines {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(212,168,67,.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(212,168,67,.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+  }
+
+  .particle {
+    position: absolute; border-radius: 50%;
+    background: var(--gold); opacity: .3;
+    animation: floatP linear infinite;
+  }
+
+  @keyframes floatP {
+    0%   { transform: translateY(0)   scale(1);   opacity: .15; }
+    50%  { transform: translateY(-28px) scale(1.3); opacity: .45; }
+    100% { transform: translateY(0)   scale(1);   opacity: .15; }
+  }
+
+  /* ─── Layout ─── */
+  #app {
+    position: relative; z-index: 1;
+    max-width: 900px; margin: 0 auto;
+    padding: 22px 14px 100px;
+  }
+
+  /* ─── Header ─── */
+  .header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 22px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    backdrop-filter: blur(20px);
+    margin-bottom: 22px;
+    position: relative; overflow: hidden;
+  }
+
+  .header::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), var(--teal-l), transparent);
+  }
+
+  .header-right { display: flex; align-items: center; gap: 14px; }
+
+  .avatar {
+    width: 52px; height: 52px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--gold), var(--teal));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; font-weight: 700; color: #080c14;
+    box-shadow: 0 0 20px rgba(212,168,67,.4);
+    flex-shrink: 0;
+  }
+
+  .hname {
+    font-size: 21px; font-weight: 700;
+    background: linear-gradient(135deg, var(--gold-l), var(--teal-l));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+
+  .hdate { font-size: 12px; color: var(--sub); margin-top: 2px; }
+
+  .greeting-badge {
+    display: flex; align-items: center; gap: 7px;
+    background: rgba(212,168,67,.08);
+    border: 1px solid rgba(212,168,67,.22);
+    padding: 8px 16px; border-radius: 30px;
+    font-size: 14px; font-weight: 600; color: var(--gold-l);
+  }
+
+  /* ─── Bottom Nav ─── */
+  .nav {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 200;
+    background: rgba(8,12,20,.96);
+    border-top: 1px solid var(--border);
+    backdrop-filter: blur(20px);
+    display: flex;
+  }
+
+  .nav-btn {
+    flex: 1; padding: 10px 6px;
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    background: none; border: none; cursor: pointer;
+    color: #475569; transition: color .25s; font-family: inherit;
+  }
+
+  .nav-btn.active { color: var(--gold); }
+
+  .nav-icon {
+    width: 40px; height: 40px; border-radius: 13px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; transition: background .25s;
+  }
+
+  .nav-btn.active .nav-icon { background: rgba(212,168,67,.14); }
+  .nav-label { font-size: 11px; font-weight: 600; }
+
+  /* ─── Tabs ─── */
+  .tab { display: none; flex-direction: column; gap: 16px; }
+  .tab.active { display: flex; }
+
+  /* ─── Card ─── */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    backdrop-filter: blur(16px);
+    overflow: hidden;
+  }
+
+  .card-head {
+    padding: 16px 20px 13px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+
+  .card-title {
+    font-size: 16px; font-weight: 700;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--gold), var(--teal));
+  }
+
+  .card-sub { font-size: 13px; color: var(--sub); }
+
+  /* ─── Quick Grid ─── */
+  .quick-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+    margin-bottom: 0;
+  }
+
+  .qcard {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 16px;
+    backdrop-filter: blur(16px);
+  }
+
+  .qi { font-size: 28px; margin-bottom: 6px; }
+  .qv { font-size: 26px; font-weight: 900; line-height: 1; }
+  .ql { font-size: 12px; color: var(--muted); margin-top: 3px; }
+
+  /* ─── Progress Bar ─── */
+  .prog-wrap { padding: 16px 20px; }
+
+  .bar-track {
+    height: 10px; background: rgba(255,255,255,.06);
+    border-radius: 5px; overflow: hidden;
+  }
+
+  .bar-fill {
+    height: 100%; border-radius: 5px;
+    background: linear-gradient(90deg, var(--teal), var(--gold));
+    transition: width 1s cubic-bezier(.34,1.56,.64,1);
+  }
+
+  .bar-info {
+    display: flex; justify-content: space-between;
+    margin-top: 9px; font-size: 12px; color: var(--muted);
+  }
+
+  /* ─── Activity Rows ─── */
+  .act-list { padding: 8px 12px 12px; display: flex; flex-direction: column; gap: 7px; }
+
+  .act-row {
+    display: flex; align-items: center; gap: 11px;
+    padding: 12px 13px;
+    border-radius: 13px;
+    border: 1px solid transparent;
+    background: rgba(255,255,255,.025);
+    transition: background .2s, border-color .2s;
+    cursor: pointer;
+    position: relative;
+  }
+
+  .act-row:hover { background: rgba(255,255,255,.05); }
+  .act-row.done { background: rgba(4,120,87,.06); border-color: rgba(4,120,87,.2); }
+
+  .check-box {
+    width: 26px; height: 26px; border-radius: 8px; flex-shrink: 0;
+    border: 2px solid; display: flex; align-items: center; justify-content: center;
+    font-size: 14px; transition: all .2s;
+  }
+
+  .check-box.checked { background: var(--emerald); border-color: var(--emerald); color: #fff; }
+
+  .act-title { font-size: 15px; font-weight: 600; transition: all .2s; flex: 1; }
+  .act-row.done .act-title { text-decoration: line-through; color: var(--muted); }
+
+  .act-meta {
+    font-size: 12px; color: var(--muted);
+    display: flex; gap: 8px; align-items: center; margin-top: 3px;
+    flex-wrap: wrap;
+  }
+
+  .cat-badge {
+    display: inline-flex; align-items: center; gap: 3px;
+    padding: 2px 8px; border-radius: 20px;
+    font-size: 11px; font-weight: 600;
+    background: rgba(255,255,255,.06);
+  }
+
+  .del-btn {
+    width: 28px; height: 28px; border-radius: 8px; border: none;
+    background: rgba(239,68,68,.08); color: #ef4444;
+    cursor: pointer; font-size: 14px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all .2s; opacity: 0; font-family: inherit;
+    flex-shrink: 0;
+  }
+
+  .act-row:hover .del-btn { opacity: 1; }
+  .del-btn:hover { background: rgba(239,68,68,.2); }
+
+  /* ─── Add button ─── */
+  .add-btn {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    width: 100%; padding: 12px;
+    background: linear-gradient(135deg, rgba(212,168,67,.14), rgba(13,148,136,.14));
+    border: 1px dashed rgba(212,168,67,.3);
+    border-radius: 13px; color: var(--gold-l);
+    cursor: pointer; font-size: 15px; font-weight: 600;
+    transition: all .2s; margin-top: 4px; font-family: inherit;
+  }
+
+  .add-btn:hover { background: linear-gradient(135deg, rgba(212,168,67,.22), rgba(13,148,136,.22)); }
+
+  /* ─── Filter chips ─── */
+  .filter-bar {
+    padding: 10px 12px;
+    display: flex; gap: 6px; flex-wrap: wrap;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .chip {
+    padding: 5px 12px; border-radius: 20px;
+    border: 1px solid; font-size: 12px; font-weight: 600;
+    cursor: pointer; transition: all .2s; font-family: inherit;
+    background: transparent; color: var(--sub);
+    border-color: rgba(255,255,255,.08);
+  }
+
+  /* ─── Modal ─── */
+  .modal-bg {
+    display: none; position: fixed; inset: 0; z-index: 300;
+    background: rgba(0,0,0,.72); backdrop-filter: blur(8px);
+    align-items: flex-end; justify-content: center;
+  }
+
+  .modal-bg.open { display: flex; animation: fadeIn .2s; }
+
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes slideUp { from { transform: translateY(60px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+  .modal {
+    background: #0f172a;
+    border: 1px solid var(--border);
+    border-radius: 24px 24px 0 0;
+    padding: 24px 20px 38px;
+    width: 100%; max-width: 900px;
+    animation: slideUp .3s cubic-bezier(.34,1.56,.64,1);
+    max-height: 90vh; overflow-y: auto;
+  }
+
+  .modal-title {
+    font-size: 18px; font-weight: 700; text-align: center; margin-bottom: 18px;
+    background: linear-gradient(135deg, var(--gold-l), var(--teal-l));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+
+  .form-field { margin-bottom: 13px; }
+  .form-label { font-size: 12px; font-weight: 600; color: var(--sub); margin-bottom: 6px; display: block; }
+
+  .form-input {
+    width: 100%; padding: 11px 13px;
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: 12px; color: var(--text); font-size: 14px;
+    outline: none; transition: border .2s; font-family: inherit; direction: rtl;
+  }
+
+  .form-input:focus { border-color: var(--gold); }
+
+  .cat-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 7px; }
+
+  .cat-opt {
+    padding: 9px 6px; border-radius: 11px;
+    border: 1px solid rgba(255,255,255,.08);
+    background: rgba(255,255,255,.03);
+    cursor: pointer; text-align: center;
+    font-size: 12px; font-weight: 600;
+    transition: all .2s; font-family: inherit; color: var(--text);
+  }
+
+  .cat-opt.sel { border-color: var(--gold); background: rgba(212,168,67,.1); color: var(--gold-l); }
+
+  .submit-btn {
+    width: 100%; padding: 13px;
+    background: linear-gradient(135deg, var(--gold), var(--teal));
+    border: none; border-radius: 13px;
+    color: #080c14; font-size: 15px; font-weight: 800;
+    cursor: pointer; font-family: inherit;
+    margin-top: 6px; transition: all .2s;
+  }
+
+  .submit-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 25px rgba(212,168,67,.3); }
+
+  .cancel-btn {
+    width: 100%; padding: 11px;
+    background: transparent;
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: 13px; color: var(--sub);
+    cursor: pointer; font-family: inherit; font-size: 14px; margin-top: 8px;
+  }
+
+  /* ─── Nutrition ─── */
+  .drop-zone {
+    margin: 14px; border: 2px dashed rgba(212,168,67,.25);
+    border-radius: 16px; padding: 34px 16px;
+    text-align: center; cursor: pointer;
+    background: rgba(212,168,67,.03);
+    transition: all .3s; position: relative; overflow: hidden;
+  }
+
+  .drop-zone.over { border-color: var(--gold); background: rgba(212,168,67,.08); }
+
+  .drop-icon { font-size: 46px; margin-bottom: 10px; }
+  .drop-ttl { font-size: 16px; font-weight: 700; color: var(--gold-l); margin-bottom: 5px; }
+  .drop-sub { font-size: 13px; color: var(--muted); }
+
+  .analyzing {
+    position: absolute; inset: 0;
+    background: rgba(8,12,20,.9);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 12px; border-radius: 14px;
+  }
+
+  .spinner {
+    width: 40px; height: 40px; border-radius: 50%;
+    border: 3px solid rgba(212,168,67,.2); border-top-color: var(--gold);
+    animation: spin .8s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .ana-txt { font-size: 14px; font-weight: 600; color: var(--gold-l); }
+
+  /* Cal hero */
+  .cal-hero {
+    display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px;
+    background: linear-gradient(135deg, rgba(212,168,67,.05), rgba(13,148,136,.05));
+    border-bottom: 1px solid var(--border);
+  }
+
+  .cal-big {
+    font-size: 50px; font-weight: 900; line-height: 1;
+    background: linear-gradient(135deg, var(--gold-l), var(--teal-l));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+
+  .cal-lbl { font-size: 14px; color: var(--muted); margin-top: 4px; }
+
+  /* Macro grid */
+  .macro-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; padding: 14px; }
+
+  .macro-card {
+    background: rgba(255,255,255,.03);
+    border: 1px solid rgba(255,255,255,.07);
+    border-radius: 13px; padding: 13px;
+  }
+
+  .mc-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 9px; }
+  .mc-name { font-size: 12px; font-weight: 600; color: var(--sub); }
+  .mc-val { font-size: 19px; font-weight: 800; }
+  .mc-unit { font-size: 11px; font-weight: 500; color: var(--muted); }
+
+  .bar2 { height: 5px; background: rgba(255,255,255,.07); border-radius: 3px; overflow: hidden; }
+  .bar2-fill { height: 100%; border-radius: 3px; transition: width .8s cubic-bezier(.34,1.56,.64,1); }
+
+  /* Meal cards */
+  .meal-list { padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+
+  .meal-card {
+    display: flex; gap: 13px; padding: 13px;
+    background: rgba(255,255,255,.025);
+    border: 1px solid rgba(255,255,255,.07);
+    border-radius: 15px; align-items: flex-start;
+  }
+
+  .meal-img {
+    width: 70px; height: 70px; border-radius: 11px;
+    object-fit: cover; flex-shrink: 0;
+    border: 1px solid rgba(255,255,255,.1);
+  }
+
+  .meal-info { flex: 1; min-width: 0; }
+  .meal-name { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+  .meal-time { font-size: 11px; color: var(--muted); margin-bottom: 7px; }
+
+  .macro-pills { display: flex; gap: 6px; flex-wrap: wrap; }
+
+  .mpill {
+    padding: 3px 9px; border-radius: 20px;
+    font-size: 11px; font-weight: 700;
+  }
+
+  .meal-desc { font-size: 12px; color: var(--sub); margin-top: 7px; line-height: 1.55; }
+
+  .del-meal {
+    background: rgba(239,68,68,.08); border: none; border-radius: 8px;
+    color: #ef4444; cursor: pointer; padding: 5px 7px;
+    font-size: 13px; transition: all .2s; align-self: flex-start;
+    font-family: inherit;
+  }
+
+  .del-meal:hover { background: rgba(239,68,68,.2); }
+
+  /* Empty */
+  .empty { text-align: center; padding: 30px 14px; color: #475569; }
+  .e-icon { font-size: 38px; margin-bottom: 8px; }
+  .e-txt { font-size: 13px; }
+  .e-sub { font-size: 12px; margin-top: 5px; }
+
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-thumb { background: rgba(212,168,67,.3); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<div id="bg"><div class="grid-lines"></div></div>
+
+<div id="app">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-right">
+      <div class="avatar">ب</div>
+      <div>
+        <div class="hname">بڕوا</div>
+        <div class="hdate" id="hdate"></div>
+      </div>
+    </div>
+    <div class="greeting-badge" id="greeting"></div>
+  </div>
+
+  <!-- HOME TAB -->
+  <div class="tab active" id="tab-home">
+    <div class="quick-grid">
+      <div class="qcard" style="border-color:rgba(74,222,128,.2)">
+        <div class="qi">✅</div>
+        <div class="qv" id="qv-acts" style="color:#4ade80">0/0</div>
+        <div class="ql">چاڵاکی تەواوکراو</div>
+      </div>
+      <div class="qcard" style="border-color:rgba(212,168,67,.2)">
+        <div class="qi">🔥</div>
+        <div class="qv" id="qv-cal" style="color:var(--gold-l)">0</div>
+        <div class="ql">کالۆری ئەمڕۆ</div>
+      </div>
+      <div class="qcard" style="border-color:rgba(96,165,250,.2)">
+        <div class="qi">💪</div>
+        <div class="qv" id="qv-pro" style="color:#60a5fa">0g</div>
+        <div class="ql">پرۆتین</div>
+      </div>
+      <div class="qcard" style="border-color:rgba(167,139,250,.2)">
+        <div class="qi">🍽️</div>
+        <div class="qv" id="qv-meals" style="color:#a78bfa">0</div>
+        <div class="ql">جار خواردووە</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title"><div class="dot"></div>پێشکەوتنی ئەمڕۆ</div>
+        <span class="card-sub" id="prog-pct">0%</span>
+      </div>
+      <div class="prog-wrap">
+        <div class="bar-track"><div class="bar-fill" id="prog-bar" style="width:0%"></div></div>
+        <div class="bar-info">
+          <span id="prog-done">تەواو: 0</span>
+          <span id="prog-left">ماوە: 0</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="home-preview-card">
+      <div class="card-head">
+        <div class="card-title"><div class="dot"></div>چاڵاکیە نزیکەکان</div>
+      </div>
+      <div class="act-list" id="home-preview-list"></div>
+    </div>
+  </div>
+
+  <!-- ACTIVITIES TAB -->
+  <div class="tab" id="tab-activities">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title"><div class="dot"></div>چاڵاکیەکانم</div>
+        <span class="card-sub" id="act-count">0/0 تەواو</span>
+      </div>
+      <div class="filter-bar" id="filter-bar"></div>
+      <div class="act-list" id="act-list">
+        <div class="empty"><div class="e-icon">📋</div><div class="e-txt">هیچ چاڵاکیێک نییە</div></div>
+      </div>
+      <div style="padding:0 12px 12px">
+        <button class="add-btn" onclick="openModal()">+ چاڵاکیی نوێ زیاد بکە</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- NUTRITION TAB -->
+  <div class="tab" id="tab-nutrition">
+    <div class="card" id="nut-summary" style="display:none">
+      <div class="cal-hero">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:3px">کالۆری کۆی ئەمڕۆ</div>
+        <div class="cal-big" id="total-cal">0</div>
+        <div class="cal-lbl">kcal</div>
+      </div>
+      <div class="macro-grid">
+        <div class="macro-card">
+          <div class="mc-top">
+            <span class="mc-name">پرۆتین</span>
+            <span class="mc-val" style="color:#60a5fa" id="t-pro">0</span>
+          </div>
+          <div class="bar2"><div class="bar2-fill" id="b-pro" style="background:#60a5fa;width:0%"></div></div>
+        </div>
+        <div class="macro-card">
+          <div class="mc-top">
+            <span class="mc-name">کاربەهایدرات</span>
+            <span class="mc-val" style="color:#fbbf24" id="t-carb">0</span>
+          </div>
+          <div class="bar2"><div class="bar2-fill" id="b-carb" style="background:#fbbf24;width:0%"></div></div>
+        </div>
+        <div class="macro-card">
+          <div class="mc-top">
+            <span class="mc-name">چەوری</span>
+            <span class="mc-val" style="color:#f472b6" id="t-fat">0</span>
+          </div>
+          <div class="bar2"><div class="bar2-fill" id="b-fat" style="background:#f472b6;width:0%"></div></div>
+        </div>
+        <div class="macro-card">
+          <div class="mc-top">
+            <span class="mc-name">فایبەر</span>
+            <span class="mc-val" style="color:#a78bfa" id="t-fib">0</span>
+          </div>
+          <div class="bar2"><div class="bar2-fill" id="b-fib" style="background:#a78bfa;width:0%"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title"><div class="dot"></div>شوێنکەوتنی خواردن</div>
+      </div>
+      <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+        <input type="file" id="file-input" accept="image/*" style="display:none" onchange="handleFile(this.files[0])"/>
+        <div class="drop-icon" id="dz-icon">🍽️</div>
+        <div class="drop-ttl">وێنەی خواردنەکەت بنێرە</div>
+        <div class="drop-sub">هۆشی دەستکرد کالۆری و ماکرۆ دەزانێتەوە</div>
+        <div class="analyzing" id="ana-overlay" style="display:none">
+          <div class="spinner"></div>
+          <div class="ana-txt">دەخوێنێتەوە...</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="meal-card" style="display:none">
+      <div class="card-head">
+        <div class="card-title"><div class="dot"></div>خواردنەکانی ئەمڕۆ</div>
+        <span class="card-sub" id="meal-count">0 خواردن</span>
+      </div>
+      <div class="meal-list" id="meal-list"></div>
+    </div>
+
+    <div class="card" id="meal-empty-card">
+      <div class="empty">
+        <div class="e-icon">🍴</div>
+        <div class="e-txt">هێشتا هیچ خواردنێک تۆمار نەکراوە</div>
+        <div class="e-sub">وێنەی خواردنەکەت بنێرە تا ئەنالیز بکرێت</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- #app -->
+
+<!-- Bottom Nav -->
+<nav class="nav">
+  <button class="nav-btn active" onclick="switchTab('home',this)">
+    <div class="nav-icon">🏠</div>
+    <div class="nav-label">سەرەکی</div>
+  </button>
+  <button class="nav-btn" onclick="switchTab('activities',this)">
+    <div class="nav-icon">📋</div>
+    <div class="nav-label">چاڵاکیەکان</div>
+  </button>
+  <button class="nav-btn" onclick="switchTab('nutrition',this)">
+    <div class="nav-icon">🍎</div>
+    <div class="nav-label">خواردن</div>
+  </button>
+</nav>
+
+<!-- Add Activity Modal -->
+<div class="modal-bg" id="modal-bg" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-title">✨ چاڵاکیی نوێ</div>
+
+    <div class="form-field">
+      <label class="form-label">ناوی چاڵاکی</label>
+      <input class="form-input" id="inp-title" placeholder="بنووسە..."/>
+    </div>
+
+    <div class="form-field">
+      <label class="form-label">کاتی ئەنجامدان</label>
+      <input type="time" class="form-input" id="inp-time" value="09:00"/>
+    </div>
+
+    <div class="form-field">
+      <label class="form-label">جۆری چاڵاکی</label>
+      <div class="cat-grid" id="cat-grid"></div>
+    </div>
+
+    <div class="form-field">
+      <label class="form-label">تێبینی (ئارەزوومەند)</label>
+      <input class="form-input" id="inp-note" placeholder="هەر تێبینیێک..."/>
+    </div>
+
+    <button class="submit-btn" onclick="addActivity()">زیاد بکە ✓</button>
+    <button class="cancel-btn" onclick="closeModal()">دەستبەرداربوون</button>
+  </div>
+</div>
+
+<script>
+// ─── Data ───────────────────────────────────────────────
+const DAYS = ["یەکشەممە","دووشەممە","سێشەممە","چوارشەممە","پێنجشەممە","هەینی","شەممە"];
+const MONTHS = ["کانوونی دووەم","شوبات","ئازار","نیسان","ئایار","حوزەیران","تەممووز","ئاب","ئەیلوول","تشرینی یەکەم","تشرینی دووەم","کانوونی یەکەم"];
+
+const CATS = [
+  { id:"sport",  label:"وەرزش",     color:"#4ade80", icon:"🏃" },
+  { id:"work",   label:"کار",        color:"#60a5fa", icon:"💼" },
+  { id:"study",  label:"خوێندن",    color:"#f59e0b", icon:"📚" },
+  { id:"health", label:"تەندروستی", color:"#f472b6", icon:"🏥" },
+  { id:"social", label:"کۆمەڵایەتی",color:"#a78bfa", icon:"👥" },
+  { id:"other",  label:"تر",         color:"#94a3b8", icon:"✨" },
+];
+
+let activities = [
+  { id:1, title:"وەرزشی بەیانی",       category:"sport",  time:"07:00", note:"", done:false },
+  { id:2, title:"خوێندنەوەی کتێب",    category:"study",  time:"08:00", note:"", done:false },
+  { id:3, title:"کارکردن لەسەر پرۆژە", category:"work",  time:"10:00", note:"", done:false },
+];
+
+let meals = [];
+let selectedCat = "other";
+let filterCat   = "all";
+
+// ─── Particles ──────────────────────────────────────────
+(function spawnParticles(){
+  const bg = document.getElementById('bg');
+  for(let i=0;i<16;i++){
+    const d = document.createElement('div');
+    d.className='particle';
+    const sz = Math.random()*3+1;
+    d.style.cssText=`
+      left:${Math.random()*100}%;top:${Math.random()*100}%;
+      width:${sz}px;height:${sz}px;
+      animation-duration:${Math.random()*8+6}s;
+      animation-delay:${Math.random()*4}s;`;
+    bg.appendChild(d);
+  }
+})();
+
+// ─── Date / Greeting ────────────────────────────────────
+(function initHeader(){
+  const now=new Date();
+  const day=DAYS[now.getDay()];
+  const month=MONTHS[now.getMonth()];
+  document.getElementById('hdate').textContent=`${day}، ${now.getDate()} ${month} ${now.getFullYear()}`;
+
+  const h=now.getHours();
+  let text,emoji;
+  if(h>=5&&h<12){text="بەیانی باش";emoji="🌅";}
+  else if(h>=12&&h<17){text="ڕۆژ باش";emoji="☀️";}
+  else if(h>=17&&h<21){text="ئێوار باش";emoji="🌆";}
+  else{text="شەو باش";emoji="🌙";}
+  document.getElementById('greeting').innerHTML=`<span>${emoji}</span><span>${text}!</span>`;
+})();
+
+// ─── Tab Switching ───────────────────────────────────────
+function switchTab(id, btn){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  btn.classList.add('active');
+  renderAll();
+}
+
+// ─── Category Grid (modal) ──────────────────────────────
+function buildCatGrid(){
+  const grid=document.getElementById('cat-grid');
+  grid.innerHTML='';
+  CATS.forEach(c=>{
+    const b=document.createElement('button');
+    b.className='cat-opt'+(c.id===selectedCat?' sel':'');
+    b.innerHTML=`${c.icon}<br/>${c.label}`;
+    if(c.id===selectedCat) b.style.cssText=`border-color:${c.color};color:${c.color};background:${c.color}18`;
+    b.onclick=()=>{
+      selectedCat=c.id;
+      buildCatGrid();
+    };
+    grid.appendChild(b);
+  });
+}
+
+// ─── Filter bar ─────────────────────────────────────────
+function buildFilterBar(){
+  const bar=document.getElementById('filter-bar');
+  bar.innerHTML='';
+  const all=[{id:'all',label:'هەموو',icon:''},...CATS];
+  all.forEach(c=>{
+    const b=document.createElement('button');
+    b.className='chip';
+    b.textContent=(c.icon?c.icon+' ':'')+c.label;
+    const active=filterCat===c.id;
+    if(active){
+      const col=c.id==='all'?'var(--gold)':c.color;
+      b.style.borderColor=col;
+      b.style.background=c.id==='all'?'rgba(212,168,67,.1)':`${col}18`;
+      b.style.color=col;
+    }
+    b.onclick=()=>{ filterCat=c.id; renderAll(); };
+    bar.appendChild(b);
+  });
+}
+
+// ─── Cat helper ─────────────────────────────────────────
+function catInfo(id){ return CATS.find(c=>c.id===id)||CATS[5]; }
+
+// ─── Render Activity Row ─────────────────────────────────
+function actRow(a, showDel=true){
+  const ci=catInfo(a.category);
+  const div=document.createElement('div');
+  div.className='act-row'+(a.done?' done':'');
+  div.dataset.id=a.id;
+
+  const check=document.createElement('div');
+  check.className='check-box'+(a.done?' checked':'');
+  check.style.borderColor=a.done?'var(--emerald)':ci.color;
+  check.textContent=a.done?'✓':'';
+
+  const info=document.createElement('div');
+  info.style.flex='1';
+  info.innerHTML=`
+    <div class="act-title">${a.title}</div>
+    <div class="act-meta">
+      <span class="cat-badge" style="color:${ci.color}">${ci.icon} ${ci.label}</span>
+      <span>⏰ ${a.time}</span>
+      ${a.note?`<span>📝 ${a.note}</span>`:''}
+    </div>`;
+
+  div.appendChild(check);
+  div.appendChild(info);
+
+  if(showDel){
+    const del=document.createElement('button');
+    del.className='del-btn';
+    del.textContent='✕';
+    del.onclick=(e)=>{ e.stopPropagation(); deleteActivity(a.id); };
+    div.appendChild(del);
+  }
+
+  div.onclick=()=>toggleDone(a.id);
+  return div;
+}
+
+// ─── Render All ─────────────────────────────────────────
+function renderAll(){
+  const done=activities.filter(a=>a.done).length;
+  const total=activities.length;
+  const pct=total?Math.round(done/total*100):0;
+
+  // Quick stats
+  const totCal=meals.reduce((s,m)=>s+(m.calories||0),0);
+  const totPro=meals.reduce((s,m)=>s+(m.protein||0),0);
+  document.getElementById('qv-acts').textContent=`${done}/${total}`;
+  document.getElementById('qv-cal').textContent=totCal;
+  document.getElementById('qv-pro').textContent=totPro+'g';
+  document.getElementById('qv-meals').textContent=meals.length;
+
+  // Progress
+  document.getElementById('prog-pct').textContent=pct+'%';
+  document.getElementById('prog-bar').style.width=pct+'%';
+  document.getElementById('prog-done').textContent='تەواو: '+done;
+  document.getElementById('prog-left').textContent='ماوە: '+(total-done);
+
+  // Home preview
+  const prev=document.getElementById('home-preview-list');
+  prev.innerHTML='';
+  activities.slice(0,3).forEach(a=>prev.appendChild(actRow(a,false)));
+  document.getElementById('home-preview-card').style.display=activities.length?'':'none';
+
+  // Activities tab
+  buildFilterBar();
+  const list=document.getElementById('act-list');
+  list.innerHTML='';
+  const filtered=filterCat==='all'?activities:activities.filter(a=>a.category===filterCat);
+  if(filtered.length===0){
+    list.innerHTML='<div class="empty"><div class="e-icon">📋</div><div class="e-txt">هیچ چاڵاکیێک نییە</div></div>';
+  } else {
+    filtered.forEach(a=>list.appendChild(actRow(a,true)));
+  }
+  document.getElementById('act-count').textContent=`${done}/${total} تەواو`;
+
+  // Nutrition summary
+  const totCarb=meals.reduce((s,m)=>s+(m.carbs||0),0);
+  const totFat=meals.reduce((s,m)=>s+(m.fat||0),0);
+  const totFib=meals.reduce((s,m)=>s+(m.fiber||0),0);
+
+  if(meals.length){
+    document.getElementById('nut-summary').style.display='';
+    document.getElementById('total-cal').textContent=totCal;
+    document.getElementById('t-pro').textContent=totPro+'g';
+    document.getElementById('t-carb').textContent=totCarb+'g';
+    document.getElementById('t-fat').textContent=totFat+'g';
+    document.getElementById('t-fib').textContent=totFib+'g';
+    document.getElementById('b-pro').style.width=Math.min(totPro/150*100,100)+'%';
+    document.getElementById('b-carb').style.width=Math.min(totCarb/300*100,100)+'%';
+    document.getElementById('b-fat').style.width=Math.min(totFat/80*100,100)+'%';
+    document.getElementById('b-fib').style.width=Math.min(totFib/30*100,100)+'%';
+    document.getElementById('meal-card').style.display='';
+    document.getElementById('meal-empty-card').style.display='none';
+    document.getElementById('meal-count').textContent=meals.length+' خواردن';
+
+    const ml=document.getElementById('meal-list');
+    ml.innerHTML='';
+    meals.forEach(m=>{
+      const d=document.createElement('div');
+      d.className='meal-card';
+      d.innerHTML=`
+        <img class="meal-img" src="${m.preview}" alt="${m.name}"/>
+        <div class="meal-info">
+          <div class="meal-name">${m.name||'خواردن'}</div>
+          <div class="meal-time">🕐 ${m.time}</div>
+          <div class="macro-pills">
+            <span class="mpill" style="background:rgba(251,191,36,.12);color:#fbbf24">🔥 ${m.calories} kcal</span>
+            <span class="mpill" style="background:rgba(96,165,250,.12);color:#60a5fa">💪 ${m.protein}g</span>
+            <span class="mpill" style="background:rgba(167,139,250,.12);color:#a78bfa">🌾 ${m.carbs}g</span>
+            <span class="mpill" style="background:rgba(244,114,182,.12);color:#f472b6">🥑 ${m.fat}g</span>
+          </div>
+          ${m.description?`<div class="meal-desc">${m.description}</div>`:''}
+        </div>
+        <button class="del-meal" onclick="deleteMeal(${m.id})">✕</button>`;
+      ml.appendChild(d);
+    });
+  } else {
+    document.getElementById('nut-summary').style.display='none';
+    document.getElementById('meal-card').style.display='none';
+    document.getElementById('meal-empty-card').style.display='';
+  }
+}
+
+// ─── Toggle Done ─────────────────────────────────────────
+function toggleDone(id){
+  activities=activities.map(a=>a.id===id?{...a,done:!a.done}:a);
+  renderAll();
+}
+
+// ─── Delete ──────────────────────────────────────────────
+function deleteActivity(id){
+  activities=activities.filter(a=>a.id!==id);
+  renderAll();
+}
+
+function deleteMeal(id){
+  meals=meals.filter(m=>m.id!==id);
+  renderAll();
+}
+
+// ─── Modal ───────────────────────────────────────────────
+function openModal(){
+  selectedCat='other';
+  buildCatGrid();
+  document.getElementById('inp-title').value='';
+  document.getElementById('inp-time').value='09:00';
+  document.getElementById('inp-note').value='';
+  document.getElementById('modal-bg').classList.add('open');
+}
+
+function closeModal(){
+  document.getElementById('modal-bg').classList.remove('open');
+}
+
+function addActivity(){
+  const title=document.getElementById('inp-title').value.trim();
+  if(!title) return;
+  activities.push({
+    id: Date.now(),
+    title,
+    category: selectedCat,
+    time: document.getElementById('inp-time').value,
+    note: document.getElementById('inp-note').value.trim(),
+    done: false
+  });
+  closeModal();
+  renderAll();
+}
+
+// ─── Drag & Drop ─────────────────────────────────────────
+const dz=document.getElementById('drop-zone');
+dz.addEventListener('dragover',e=>{ e.preventDefault(); dz.classList.add('over'); document.getElementById('dz-icon').textContent='📥'; });
+dz.addEventListener('dragleave',()=>{ dz.classList.remove('over'); document.getElementById('dz-icon').textContent='🍽️'; });
+dz.addEventListener('drop',e=>{ e.preventDefault(); dz.classList.remove('over'); document.getElementById('dz-icon').textContent='🍽️'; if(e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); });
+
+// ─── Analyze Food ─────────────────────────────────────────
+async function handleFile(file){
+  if(!file) return;
+  const overlay=document.getElementById('ana-overlay');
+  overlay.style.display='flex';
+
+  try{
+    const base64=await new Promise((res,rej)=>{
+      const r=new FileReader();
+      r.onload=()=>res(r.result.split(',')[1]);
+      r.onerror=rej;
+      r.readAsDataURL(file);
+    });
+
+    const resp=await fetch("https://api.anthropic.com/v1/messages",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        model:"claude-sonnet-4-20250514",
+        max_tokens:1000,
+        messages:[{
+          role:"user",
+          content:[
+            { type:"image", source:{ type:"base64", media_type:file.type||"image/jpeg", data:base64 } },
+            { type:"text", text:`Analyze this food image and return ONLY a JSON object:
+{
+  "name": "food name in Kurdish Sorani",
+  "calories": number,
+  "protein": number,
+  "carbs": number,
+  "fat": number,
+  "fiber": number,
+  "description": "2 sentences in Kurdish Sorani about this food's nutritional value"
+}
+Estimate for a typical serving. Return ONLY valid JSON, no markdown.`}
+          ]
+        }]
+      })
+    });
+
+    const data=await resp.json();
+    const text=data.content?.[0]?.text||'{}';
+    const clean=text.replace(/```json|```/g,'').trim();
+    const parsed=JSON.parse(clean);
+    const preview=URL.createObjectURL(file);
+    const now=new Date();
+    const time=now.toLocaleTimeString('ku',{hour:'2-digit',minute:'2-digit'});
+    meals.unshift({...parsed, id:Date.now(), preview, time});
+    renderAll();
+  }catch(e){
+    console.error(e);
+    alert('خەوتنێک ڕوویدا، تکایە دووبارە هەوڵبدە');
+  }
+
+  overlay.style.display='none';
+  document.getElementById('file-input').value='';
+}
+
+// ─── Init ─────────────────────────────────────────────────
+renderAll();
+</script>
+</body>
+</html>
