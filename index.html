@@ -471,6 +471,109 @@
 
   ::-webkit-scrollbar { width: 4px; }
   ::-webkit-scrollbar-thumb { background: rgba(212,168,67,.3); border-radius: 2px; }
+
+  /* ─── API Key Banner ─── */
+  .api-banner {
+    display:flex; align-items:center; gap:10px;
+    padding:11px 16px;
+    background: rgba(239,68,68,.08);
+    border: 1px solid rgba(239,68,68,.25);
+    border-radius:13px; margin:0 14px 14px;
+    font-size:13px; color:#fca5a5;
+    cursor:pointer; transition:background .2s;
+  }
+  .api-banner:hover { background:rgba(239,68,68,.14); }
+  .api-banner.ok {
+    background:rgba(5,150,105,.08);
+    border-color:rgba(5,150,105,.25);
+    color:#6ee7b7; cursor:default;
+  }
+  .api-banner .api-icon { font-size:18px; flex-shrink:0; }
+
+  /* ─── Settings Btn ─── */
+  .settings-btn {
+    position:fixed; bottom:80px; left:16px; z-index:150;
+    width:42px; height:42px; border-radius:50%;
+    background:rgba(212,168,67,.12);
+    border:1px solid rgba(212,168,67,.25);
+    color:var(--gold-l); font-size:18px;
+    cursor:pointer; display:flex; align-items:center; justify-content:center;
+    transition:all .2s; backdrop-filter:blur(10px);
+  }
+  .settings-btn:hover { background:rgba(212,168,67,.22); transform:rotate(30deg); }
+
+  /* ─── API Modal ─── */
+  .api-modal-wrap {
+    display:none; position:fixed; inset:0; z-index:400;
+    background:rgba(0,0,0,.75); backdrop-filter:blur(8px);
+    align-items:center; justify-content:center; padding:20px;
+  }
+  .api-modal-wrap.open { display:flex; animation:fadeIn .2s; }
+
+  .api-modal {
+    background:#0f172a;
+    border:1px solid var(--border);
+    border-radius:22px;
+    padding:28px 22px;
+    width:100%; max-width:460px;
+    animation:slideUp .3s cubic-bezier(.34,1.56,.64,1);
+  }
+
+  .api-modal-title {
+    font-size:18px; font-weight:700; text-align:center; margin-bottom:6px;
+    background:linear-gradient(135deg,var(--gold-l),var(--teal-l));
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+  }
+
+  .api-modal-sub {
+    font-size:12px; color:var(--muted); text-align:center; margin-bottom:20px; line-height:1.6;
+  }
+
+  .api-input-wrap {
+    position:relative; margin-bottom:14px;
+  }
+
+  .api-input {
+    width:100%; padding:12px 44px 12px 13px;
+    background:rgba(255,255,255,.04);
+    border:1px solid rgba(255,255,255,.1);
+    border-radius:12px; color:var(--text); font-size:13px;
+    outline:none; transition:border .2s; font-family:inherit;
+    direction:ltr; text-align:left;
+  }
+  .api-input:focus { border-color:var(--gold); }
+  .api-input::placeholder { color:var(--muted); }
+
+  .toggle-vis {
+    position:absolute; left:10px; top:50%; transform:translateY(-50%);
+    background:none; border:none; cursor:pointer; color:var(--muted); font-size:16px;
+    padding:4px;
+  }
+
+  .api-hint {
+    font-size:11px; color:var(--muted); margin-bottom:16px; line-height:1.6;
+    background:rgba(255,255,255,.03); border-radius:10px; padding:10px 12px;
+  }
+
+  .api-hint a { color:var(--teal-l); text-decoration:none; }
+  .api-hint a:hover { text-decoration:underline; }
+
+  .api-save-btn {
+    width:100%; padding:12px;
+    background:linear-gradient(135deg,var(--gold),var(--teal));
+    border:none; border-radius:12px;
+    color:#080c14; font-size:15px; font-weight:800;
+    cursor:pointer; font-family:inherit; transition:all .2s;
+  }
+  .api-save-btn:hover { transform:translateY(-1px); box-shadow:0 8px 24px rgba(212,168,67,.3); }
+
+  .api-clear-btn {
+    width:100%; padding:10px; margin-top:8px;
+    background:transparent; border:1px solid rgba(239,68,68,.25);
+    border-radius:12px; color:#fca5a5; font-size:13px;
+    cursor:pointer; font-family:inherit; transition:all .2s;
+  }
+  .api-clear-btn:hover { background:rgba(239,68,68,.1); }
 </style>
 </head>
 <body>
@@ -599,6 +702,9 @@
       <div class="card-head">
         <div class="card-title"><div class="dot"></div>شوێنکەوتنی خواردن</div>
       </div>
+      <div id="api-banner" class="api-banner" onclick="openApiModal()" style="cursor:pointer">
+        <span class="api-icon">⚠️</span><span>کلیدی API داخڵ نەکراوە — کلیک بکە بیداخڵ بکەیت</span>
+      </div>
       <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
         <input type="file" id="file-input" accept="image/*" style="display:none" onchange="handleFile(this.files[0])"/>
         <div class="drop-icon" id="dz-icon">🍽️</div>
@@ -673,6 +779,35 @@
 
     <button class="submit-btn" onclick="addActivity()">زیاد بکە ✓</button>
     <button class="cancel-btn" onclick="closeModal()">دەستبەرداربوون</button>
+  </div>
+</div>
+
+<!-- Settings / API Key Button -->
+<button class="settings-btn" onclick="openApiModal()" title="ڕێکخستنەکان">⚙️</button>
+
+<!-- API Key Modal -->
+<div class="api-modal-wrap" id="api-modal-wrap" onclick="if(event.target===this)closeApiModal()">
+  <div class="api-modal">
+    <div class="api-modal-title">🔑 کلیدی API</div>
+    <div class="api-modal-sub">
+      بۆ ئەوەی ئەنالیزی خواردن کار بکات، پێویستی بە<br/>
+      کلیدی Anthropic API هەیە
+    </div>
+
+    <div class="api-input-wrap">
+      <input class="api-input" id="api-key-input" type="password"
+        placeholder="sk-ant-api03-..." autocomplete="off" spellcheck="false"/>
+      <button class="toggle-vis" onclick="toggleApiVis()" id="vis-btn">👁️</button>
+    </div>
+
+    <div class="api-hint">
+      🔗 کلیدەکەت لێرەوە وەربگرە:
+      <a href="https://console.anthropic.com/settings/keys" target="_blank">console.anthropic.com</a><br/>
+      🔒 کلیدەکە تەنها لە براوزەرەکەتدا پاشەکەوت دەکرێت — هیچ شوێنێکی تر ناچێت.
+    </div>
+
+    <button class="api-save-btn" onclick="saveApiKey()">پاشەکەوت بکە ✓</button>
+    <button class="api-clear-btn" id="api-clear-btn" onclick="clearApiKey()" style="display:none">سڕینەوەی کلید</button>
   </div>
 </div>
 
@@ -951,7 +1086,61 @@ function addActivity(){
   renderAll();
 }
 
-// ─── Drag & Drop ─────────────────────────────────────────
+// ─── API Key Management ──────────────────────────────────
+function getApiKey(){ return localStorage.getItem('anthropic_api_key')||''; }
+
+function openApiModal(){
+  const key=getApiKey();
+  const inp=document.getElementById('api-key-input');
+  inp.value=key;
+  document.getElementById('api-clear-btn').style.display=key?'':'none';
+  document.getElementById('api-modal-wrap').classList.add('open');
+}
+
+function closeApiModal(){
+  document.getElementById('api-modal-wrap').classList.remove('open');
+}
+
+function saveApiKey(){
+  const val=document.getElementById('api-key-input').value.trim();
+  if(!val){ alert('تکایە کلیدەکە بنووسە'); return; }
+  localStorage.setItem('anthropic_api_key', val);
+  closeApiModal();
+  updateApiBanner();
+}
+
+function clearApiKey(){
+  if(!confirm('دڵنیایت لە سڕینەوەی کلید؟')) return;
+  localStorage.removeItem('anthropic_api_key');
+  document.getElementById('api-key-input').value='';
+  document.getElementById('api-clear-btn').style.display='none';
+  closeApiModal();
+  updateApiBanner();
+}
+
+function toggleApiVis(){
+  const inp=document.getElementById('api-key-input');
+  const btn=document.getElementById('vis-btn');
+  if(inp.type==='password'){ inp.type='text'; btn.textContent='🙈'; }
+  else { inp.type='password'; btn.textContent='👁️'; }
+}
+
+function updateApiBanner(){
+  const banner=document.getElementById('api-banner');
+  if(!banner) return;
+  const hasKey=!!getApiKey();
+  if(hasKey){
+    banner.className='api-banner ok';
+    banner.innerHTML='<span class="api-icon">✅</span><span>کلیدی API داخڵکراوە — ئەنالیزی خواردن ئامادەیە</span>';
+    banner.onclick=null;
+  } else {
+    banner.className='api-banner';
+    banner.innerHTML='<span class="api-icon">⚠️</span><span>کلیدی API داخڵ نەکراوە — کلیک بکە بیداخڵ بکەیت</span>';
+    banner.onclick=openApiModal;
+  }
+}
+
+
 const dz=document.getElementById('drop-zone');
 dz.addEventListener('dragover',e=>{ e.preventDefault(); dz.classList.add('over'); document.getElementById('dz-icon').textContent='📥'; });
 dz.addEventListener('dragleave',()=>{ dz.classList.remove('over'); document.getElementById('dz-icon').textContent='🍽️'; });
@@ -960,6 +1149,13 @@ dz.addEventListener('drop',e=>{ e.preventDefault(); dz.classList.remove('over');
 // ─── Analyze Food ─────────────────────────────────────────
 async function handleFile(file){
   if(!file) return;
+
+  const apiKey = getApiKey();
+  if(!apiKey){
+    openApiModal();
+    return;
+  }
+
   const overlay=document.getElementById('ana-overlay');
   overlay.style.display='flex';
 
@@ -973,7 +1169,12 @@ async function handleFile(file){
 
     const resp=await fetch("https://api.anthropic.com/v1/messages",{
       method:"POST",
-      headers:{"Content-Type":"application/json"},
+      headers:{
+        "Content-Type":"application/json",
+        "x-api-key": apiKey,
+        "anthropic-version": "2023-06-01",
+        "anthropic-dangerous-direct-browser-access": "true"
+      },
       body:JSON.stringify({
         model:"claude-sonnet-4-20250514",
         max_tokens:1000,
@@ -997,6 +1198,19 @@ Estimate for a typical serving. Return ONLY valid JSON, no markdown.`}
       })
     });
 
+    if(!resp.ok){
+      const err=await resp.json().catch(()=>({}));
+      if(resp.status===401){
+        localStorage.removeItem('anthropic_api_key');
+        updateApiBanner();
+        overlay.style.display='none';
+        alert('کلیدی API هەڵەیە، تکایە کلیدێکی دروست داخڵ بکە');
+        openApiModal();
+        return;
+      }
+      throw new Error(err.error?.message||'API error '+resp.status);
+    }
+
     const data=await resp.json();
     const text=data.content?.[0]?.text||'{}';
     const clean=text.replace(/```json|```/g,'').trim();
@@ -1007,8 +1221,8 @@ Estimate for a typical serving. Return ONLY valid JSON, no markdown.`}
     meals.unshift({...parsed, id:Date.now(), preview, time});
     renderAll();
   }catch(e){
-    console.error(e);
-    alert('خەوتنێک ڕوویدا، تکایە دووبارە هەوڵبدە');
+    console.error('Food analysis error:', e);
+    alert('خەوتنێک ڕوویدا:\n'+e.message);
   }
 
   overlay.style.display='none';
@@ -1017,6 +1231,7 @@ Estimate for a typical serving. Return ONLY valid JSON, no markdown.`}
 
 // ─── Init ─────────────────────────────────────────────────
 renderAll();
+updateApiBanner();
 </script>
 </body>
 </html>
