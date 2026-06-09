@@ -788,22 +788,25 @@
 <!-- API Key Modal -->
 <div class="api-modal-wrap" id="api-modal-wrap" onclick="if(event.target===this)closeApiModal()">
   <div class="api-modal">
-    <div class="api-modal-title">🔑 کلیدی API</div>
+    <div class="api-modal-title">🔑 کلیدی Google Gemini</div>
     <div class="api-modal-sub">
-      بۆ ئەوەی ئەنالیزی خواردن کار بکات، پێویستی بە<br/>
-      کلیدی Anthropic API هەیە
+      بەخۆڕایە — بێ کارت، بێ پارە!<br/>
+      کلیدەکەت لە Google AI Studio وەربگرە
     </div>
 
     <div class="api-input-wrap">
       <input class="api-input" id="api-key-input" type="password"
-        placeholder="sk-ant-api03-..." autocomplete="off" spellcheck="false"/>
+        placeholder="AIzaSy..." autocomplete="off" spellcheck="false"/>
+
       <button class="toggle-vis" onclick="toggleApiVis()" id="vis-btn">👁️</button>
     </div>
 
     <div class="api-hint">
-      🔗 کلیدەکەت لێرەوە وەربگرە:
-      <a href="https://console.anthropic.com/settings/keys" target="_blank">console.anthropic.com</a><br/>
-      🔒 کلیدەکە تەنها لە براوزەرەکەتدا پاشەکەوت دەکرێت — هیچ شوێنێکی تر ناچێت.
+      🆓 <strong style="color:var(--gold-l)">بەتەواوی خۆڕایە!</strong> — ١٥٠٠ داواکاری ڕۆژانە بەخۆڕای<br/><br/>
+      ١. سەردانی <a href="https://aistudio.google.com/app/apikey" target="_blank">aistudio.google.com</a> بکە<br/>
+      ٢. "Get API Key" ← "Create API Key" کلیک بکە<br/>
+      ٣. کۆپی بکە و لێرە بنووسە<br/><br/>
+      🔒 کلیدەکە تەنها لە براوزەرەکەتدا پاشەکەوت دەکرێت.
     </div>
 
     <button class="api-save-btn" onclick="saveApiKey()">پاشەکەوت بکە ✓</button>
@@ -1087,7 +1090,7 @@ function addActivity(){
 }
 
 // ─── API Key Management ──────────────────────────────────
-function getApiKey(){ return localStorage.getItem('anthropic_api_key')||''; }
+function getApiKey(){ return localStorage.getItem('gemini_api_key')||''; }
 
 function openApiModal(){
   const key=getApiKey();
@@ -1104,14 +1107,14 @@ function closeApiModal(){
 function saveApiKey(){
   const val=document.getElementById('api-key-input').value.trim();
   if(!val){ alert('تکایە کلیدەکە بنووسە'); return; }
-  localStorage.setItem('anthropic_api_key', val);
+  localStorage.setItem('gemini_api_key', val);
   closeApiModal();
   updateApiBanner();
 }
 
 function clearApiKey(){
   if(!confirm('دڵنیایت لە سڕینەوەی کلید؟')) return;
-  localStorage.removeItem('anthropic_api_key');
+  localStorage.removeItem('gemini_api_key');
   document.getElementById('api-key-input').value='';
   document.getElementById('api-clear-btn').style.display='none';
   closeApiModal();
@@ -1146,7 +1149,7 @@ dz.addEventListener('dragover',e=>{ e.preventDefault(); dz.classList.add('over')
 dz.addEventListener('dragleave',()=>{ dz.classList.remove('over'); document.getElementById('dz-icon').textContent='🍽️'; });
 dz.addEventListener('drop',e=>{ e.preventDefault(); dz.classList.remove('over'); document.getElementById('dz-icon').textContent='🍽️'; if(e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); });
 
-// ─── Analyze Food ─────────────────────────────────────────
+// ─── Analyze Food (Google Gemini — Free) ──────────────────
 async function handleFile(file){
   if(!file) return;
 
@@ -1167,22 +1170,8 @@ async function handleFile(file){
       r.readAsDataURL(file);
     });
 
-    const resp=await fetch("https://api.anthropic.com/v1/messages",{
-      method:"POST",
-      headers:{
-        "Content-Type":"application/json",
-        "x-api-key": apiKey,
-        "anthropic-version": "2023-06-01",
-        "anthropic-dangerous-direct-browser-access": "true"
-      },
-      body:JSON.stringify({
-        model:"claude-sonnet-4-20250514",
-        max_tokens:1000,
-        messages:[{
-          role:"user",
-          content:[
-            { type:"image", source:{ type:"base64", media_type:file.type||"image/jpeg", data:base64 } },
-            { type:"text", text:`Analyze this food image and return ONLY a JSON object:
+    const mimeType = file.type || 'image/jpeg';
+    const prompt = `Analyze this food image and return ONLY a JSON object with no markdown:
 {
   "name": "food name in Kurdish Sorani",
   "calories": number,
@@ -1190,36 +1179,51 @@ async function handleFile(file){
   "carbs": number,
   "fat": number,
   "fiber": number,
-  "description": "2 sentences in Kurdish Sorani about this food's nutritional value"
+  "description": "2 sentences in Kurdish Sorani about this food nutritional value"
 }
-Estimate for a typical serving. Return ONLY valid JSON, no markdown.`}
-          ]
-        }]
-      })
-    });
+Estimate for a typical serving size. Return ONLY valid JSON.`;
+
+    const resp = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents:[{
+            parts:[
+              { inline_data:{ mime_type: mimeType, data: base64 } },
+              { text: prompt }
+            ]
+          }],
+          generationConfig:{ temperature:0.2, maxOutputTokens:512 }
+        })
+      }
+    );
 
     if(!resp.ok){
-      const err=await resp.json().catch(()=>({}));
-      if(resp.status===401){
-        localStorage.removeItem('anthropic_api_key');
+      const err = await resp.json().catch(()=>({}));
+      if(resp.status===400 || resp.status===403){
+        localStorage.removeItem('gemini_api_key');
         updateApiBanner();
         overlay.style.display='none';
         alert('کلیدی API هەڵەیە، تکایە کلیدێکی دروست داخڵ بکە');
         openApiModal();
         return;
       }
-      throw new Error(err.error?.message||'API error '+resp.status);
+      throw new Error(err.error?.message || 'API error '+resp.status);
     }
 
-    const data=await resp.json();
-    const text=data.content?.[0]?.text||'{}';
-    const clean=text.replace(/```json|```/g,'').trim();
-    const parsed=JSON.parse(clean);
-    const preview=URL.createObjectURL(file);
-    const now=new Date();
-    const time=now.toLocaleTimeString('ku',{hour:'2-digit',minute:'2-digit'});
+    const data = await resp.json();
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+    const clean = text.replace(/```json|```/g,'').trim();
+    const parsed = JSON.parse(clean);
+
+    const preview = URL.createObjectURL(file);
+    const now = new Date();
+    const time = now.toLocaleTimeString('ku',{hour:'2-digit',minute:'2-digit'});
     meals.unshift({...parsed, id:Date.now(), preview, time});
     renderAll();
+
   }catch(e){
     console.error('Food analysis error:', e);
     alert('خەوتنێک ڕوویدا:\n'+e.message);
